@@ -23,7 +23,8 @@ class AuthenticationTest extends WebletTestCase {
         $app->enableCookieSession();
 
         $app->get('/test-resource', function() use ($app) {
-            return 'Test Resource';
+            return 'Test Resource ' . $app['platform']->get('test/endpoint')
+                ->json()['response'];
         });
 
     }
@@ -66,13 +67,18 @@ class AuthenticationTest extends WebletTestCase {
         $this->assertEquals(Response::HTTP_FOUND, $response->getStatusCode());
         $this->assertEquals('/test-resource', $response->getTargetUrl());
 
+        $this->mockHttpResponse($platform, 'GET', 'https://api.example.com/test/endpoint', function($request) use ($platform){
+            $this->assertEquals('test-access-token', implode(',', $request->getHeaders()['X-ACCESS-CODE']));
+
+            return ['response' => 'All Good!'];
+        });
+
         $client->followRedirect();
         $response = $client->getResponse();
         $this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
-        $this->assertEquals('Test Resource', $response->getContent());
+        $this->assertEquals('Test Resource All Good!', $response->getContent());
 
-
-        $tokenAttributes = $this->getAccessToken($client)->getAttributes();
+        $tokenAttributes = $this->getAccessToken($client)->getCredentials();
 
         $created = $tokenAttributes['created'];
         $this->assertGreaterThanOrEqual($start, $created);

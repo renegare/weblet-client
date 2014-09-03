@@ -76,16 +76,7 @@ class Client extends JSONClient implements ClientInterface {
      * {@inheritdoc}
      */
     protected function request($method = 'get', $resource=null, $data = null, array $headers = []) {
-        try {
-            return parent::request($method, $resource, $data, $headers);
-        } catch (ClientException $e) {
-            $response = $e->getResponse();
-            if((integer) $response->getStatusCode() === Response::HTTP_UNAUTHORIZED) {
-                $e = new ClientAuthException('Unauthorised exception caught.', Response::HTTP_UNAUTHORIZED, $e);
-            }
-
-            throw $e;
-        }
+        return parent::request($method, $resource, $data, $headers);
     }
 
     /**
@@ -95,28 +86,13 @@ class Client extends JSONClient implements ClientInterface {
         $request = parent::createRequest($method, $url, $options);
 
         if($accessToken = $this->getAccessToken()) {
-            $request->setHeader('X-CLIENT-SECRET', $accessToken->getAttribute('access_token'));
+            $request->setHeader('X-ACCESS-CODE', $accessToken->getAttribute('access_token'));
         }
 
         return $request;
     }
 
     protected function getAccessToken() {
-        $token = $this->token;
-        if($token && $this->willExpireSoon($token)) {
-            $this->token = null;
-            $this->token = $this->refreshToken($token);
-        }
         return $this->token;
-    }
-
-    protected function willExpireSoon(Token $token) {
-        $lifetime = $token->getAttribute('expires_in');
-        $created = $token->getAttribute('created');
-        return !((time() - $created) < ($lifetime - (5 * 60)));
-    }
-
-    protected function refreshToken(AccessToken $token) {
-        throw new \RuntimeException('Not implemented: ' . __METHOD__);
     }
 }
