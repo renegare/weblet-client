@@ -1,0 +1,28 @@
+{
+    "name": "renegare/weblet-client",
+    "description": "Silex Weblet Client OAuth2 App",
+    "keywords": ["weblet", "silex", "client", "oauth2", "renegare"],
+    "license": "MIT",
+
+    "autoload": {"psr-4": {
+        "Renegare\\Weblet\\Client\\": "src"
+    }},
+
+    "minimum-stability": "dev",
+
+    "require": {
+        "renegare/weblet-base": "0.1.*@dev",
+        "symfony/security": "v2.5.0",
+        "renegare/scoauth": "dev-master"
+    },
+
+    "require-dev": {
+        "phpunit/phpunit": "4.1.*",
+        "symfony/browser-kit": "v2.5.0",
+        "symfony/css-selector": "2.5.3"
+    },
+
+    "scripts": {
+        "test": "phpunit"
+    }
+}
