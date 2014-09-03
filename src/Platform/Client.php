@@ -33,7 +33,10 @@ class Client extends JSONClient implements ClientInterface {
      * {@inheritdoc}
      */
     public function getAuthUrl() {
-        throw new \Exception('Not implemented: ' . __METHOD__);
+        return sprintf('%s/auth/?%s', $this->endPoint, http_build_query([
+            'client_id' => $this->clientId,
+            'redirect_uri' => $this->redirectUrl
+        ]));
     }
 
     /**
@@ -47,38 +50,73 @@ class Client extends JSONClient implements ClientInterface {
      * {@inheritdoc}
      */
     public function createToken($authCode) {
-        throw new \Exception('Not implemented: ' . __METHOD__);
+        $this->debug('Exchanging auth code for access token ...');
+        $response = $this->post('auth/access', [
+            'code' => $authCode
+        ], ['X-CLIENT-SECRET' => $this->clientSecret]);
+        $responseData = $response->json();
+
+        $token = new AccessToken([]);
+        $token->setAttributes(array_merge($responseData, [
+            'auth_code' => $authCode,
+            'created' => time()
+        ]));
+        $this->setToken($token);
+
+        return $token;
     }
 
     /**
      * {@inheritdoc}
      */
     public function setToken(Token $token) {
-        throw new \Exception('Not implemented: ' . __METHOD__);
+        $this->token = $token;
     }
     /**
      * {@inheritdoc}
      */
     protected function request($method = 'get', $resource=null, $data = null, array $headers = []) {
-        throw new \Exception('Not implemented: ' . __METHOD__);
+        try {
+            return parent::request($method, $resource, $data, $headers);
+        } catch (ClientException $e) {
+            $response = $e->getResponse();
+            if((integer) $response->getStatusCode() === Response::HTTP_UNAUTHORIZED) {
+                $e = new ClientAuthException('Unauthorised exception caught.', Response::HTTP_UNAUTHORIZED, $e);
+            }
+
+            throw $e;
+        }
     }
 
     /**
      * {@inheritdoc}
      */
     protected function createRequest($method, $url=null, array $options = []) {
-        throw new \Exception('Not implemented: ' . __METHOD__);
+        $request = parent::createRequest($method, $url, $options);
+
+        if($accessToken = $this->getAccessToken()) {
+            $request->setHeader('X-CLIENT-SECRET', $accessToken->getAttribute('access_token'));
+        }
+
+        return $request;
     }
 
     protected function getAccessToken() {
-        throw new \Exception('Not implemented: ' . __METHOD__);
+        $token = $this->token;
+        if($token && $this->willExpireSoon($token)) {
+            $this->token = null;
+            $this->token = $this->refreshToken($token);
+        }
+        return $this->token;
     }
 
     protected function willExpireSoon(Token $token) {
-        throw new \Exception('Not implemented: ' . __METHOD__);
+        $lifetime = $token->getAttribute('expires_in');
+        $created = $token->getAttribute('created');
+        return !((time() - $created) < ($lifetime - (5 * 60)));
     }
 
     protected function refreshToken(AccessToken $token) {
-        throw new \Exception('Not implemented: ' . __METHOD__);
+        throw new \RuntimeException('Not implemented: ' . __METHOD__);
     }
 }
