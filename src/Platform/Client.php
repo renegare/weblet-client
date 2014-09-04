@@ -51,7 +51,7 @@ class Client extends JSONClient implements ClientInterface {
      */
     public function createToken($authCode) {
         $this->debug('Exchanging auth code for access token ...');
-        $response = $this->post('auth/access', [
+        $response = $this->post('auth/access/', [
             'code' => $authCode
         ], ['X-CLIENT-SECRET' => $this->clientSecret]);
         $responseData = $response->json();

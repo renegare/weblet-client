@@ -45,7 +45,7 @@ class AuthenticationTest extends WebletTestCase {
 
         // post user authentication
         $platform = $this->app['platform'];
-        $this->mockHttpResponse($platform, 'POST', 'https://api.example.com/auth/access', function($request) use ($platform){
+        $this->mockHttpResponse($platform, 'POST', 'https://api.example.com/auth/access/', function($request) use ($platform){
             $data = json_decode((string)$request->getBody(), true);
             $this->assertEquals([
                 'code' => 'test-auth-code'
