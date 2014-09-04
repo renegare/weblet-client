@@ -50,7 +50,7 @@ class Client extends JSONClient implements ClientInterface {
      * {@inheritdoc}
      */
     public function createToken($authCode) {
-        $this->debug('Exchanging auth code for access token ...');
+        $this->debug('Exchanging auth code for access code ...');
         $response = $this->post('auth/access/', [
             'code' => $authCode
         ], ['X-CLIENT-SECRET' => $this->clientSecret]);
@@ -86,7 +86,7 @@ class Client extends JSONClient implements ClientInterface {
         $request = parent::createRequest($method, $url, $options);
 
         if($accessToken = $this->getAccessToken()) {
-            $request->setHeader('X-ACCESS-CODE', $accessToken->getAttribute('access_token'));
+            $request->setHeader('X-ACCESS-CODE', $accessToken->getAttribute('access_code'));
         }
 
         return $request;

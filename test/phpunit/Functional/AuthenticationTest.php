@@ -55,8 +55,8 @@ class AuthenticationTest extends WebletTestCase {
             $this->assertEquals('50f4k3!', implode(',', $request->getHeaders()['X-CLIENT-SECRET']));
 
             return [
-                'access_token' => 'test-access-token',
-                'refresh_token' => 'test-refresh-token',
+                'access_code' => 'test-access-token',
+                'refresh_code' => 'test-refresh-token',
                 'lifetime' => '3600'
             ];
         });
@@ -86,8 +86,8 @@ class AuthenticationTest extends WebletTestCase {
 
         $this->assertEquals([
             'auth_code' => 'test-auth-code',
-            'access_token' => 'test-access-token',
-            'refresh_token' => 'test-refresh-token',
+            'access_code' => 'test-access-token',
+            'refresh_code' => 'test-refresh-token',
             'lifetime' => '3600',
         ], $tokenAttributes);
     }
