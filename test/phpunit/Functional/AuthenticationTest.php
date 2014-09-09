@@ -45,20 +45,23 @@ class AuthenticationTest extends WebletTestCase {
 
         // post user authentication
         $platform = $this->app['platform'];
-        $this->mockHttpResponse($platform, 'POST', 'https://api.example.com/auth/access/', function($request) use ($platform){
-            $data = json_decode((string)$request->getBody(), true);
-            $this->assertEquals([
-                'code' => 'test-auth-code'
-            ], $data);
+        $this->assertRequest($platform, [
+                'method' => 'POST',
+                'path' => '/auth/access/'
+            ], function($request) use ($platform){
+                $data = json_decode((string)$request->getBody(), true);
+                $this->assertEquals([
+                    'code' => 'test-auth-code'
+                ], $data);
 
-            $this->assertEquals('application/json', implode(',', $request->getHeaders()['Content-Type']));
-            $this->assertEquals('50f4k3!', implode(',', $request->getHeaders()['X-CLIENT-SECRET']));
+                $this->assertEquals('application/json', implode(',', $request->getHeaders()['Content-Type']));
+                $this->assertEquals('50f4k3!', implode(',', $request->getHeaders()['X-CLIENT-SECRET']));
 
-            return [
-                'access_code' => 'test-access-token',
-                'refresh_code' => 'test-refresh-token',
-                'lifetime' => '3600'
-            ];
+                return [
+                    'access_code' => 'test-access-token',
+                    'refresh_code' => 'test-refresh-token',
+                    'lifetime' => '3600'
+                ];
         });
 
         $mockAuthCode = 'test-auth-code';
@@ -67,10 +70,12 @@ class AuthenticationTest extends WebletTestCase {
         $this->assertEquals(Response::HTTP_FOUND, $response->getStatusCode());
         $this->assertEquals('/test-resource', $response->getTargetUrl());
 
-        $this->mockHttpResponse($platform, 'GET', 'https://api.example.com/test/endpoint', function($request) use ($platform){
-            $this->assertEquals('test-access-token', implode(',', $request->getHeaders()['X-ACCESS-CODE']));
+        $this->assertRequest($platform, [
+            'method' => 'GET',
+            'path' => '/test/endpoint'], function($request) use ($platform){
+                $this->assertEquals('test-access-token', implode(',', $request->getHeaders()['X-ACCESS-CODE']));
 
-            return ['response' => 'All Good!'];
+                return ['response' => 'All Good!'];
         });
 
         $client->followRedirect();

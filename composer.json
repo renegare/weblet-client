@@ -14,7 +14,7 @@
         "renegare/weblet-base": "0.1.*@dev",
         "symfony/security": "v2.5.0",
         "renegare/scoauth": "dev-master",
-        "renegare/http": "dev-master"
+        "renegare/guzzle-client-helper": "dev-master"
     },
 
     "require-dev": {

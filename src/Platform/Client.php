@@ -5,7 +5,7 @@ namespace Renegare\Weblet\Client\Platform;
 use Renegare\Scoauth\ClientInterface;
 use Renegare\Scoauth\Token;
 use Psr\Log\LoggerInterface;
-use Renegare\HTTP\JSONClient;
+use Renegare\GuzzleClientHelper\JSONClient;
 
 class Client extends JSONClient implements ClientInterface {
 
@@ -16,24 +16,24 @@ class Client extends JSONClient implements ClientInterface {
     protected $supportedHTTPMethods = ['get', 'post', 'put', 'delete', 'patch', 'options'];
 
     /**
-     * @param string $endPoint - http://api.endpoint.com (no trailing slash)
+     * @param string $baseUrl - http://api.endpoint.com (no trailing slash)
      * @param integer $clientId
      * @param string $clientSecret
      * @param string $redirectUrl - http://weblet.com/redirect/cb (full url no uri)
      * @param LoggerInterface $logger [optional]
      */
-    public function __construct($endPoint, $clientId, $clientSecret, $redirectUrl, LoggerInterface $logger = null) {
+    public function __construct($baseUrl, $clientId, $clientSecret, $redirectUrl, LoggerInterface $logger = null) {
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
         $this->redirectUrl = $redirectUrl;
-        parent::__construct($endPoint, $logger);
+        parent::__construct($baseUrl, $logger);
     }
 
     /**
      * {@inheritdoc}
      */
     public function getAuthUrl() {
-        return sprintf('%s/auth/?%s', $this->endPoint, http_build_query([
+        return sprintf('%s/auth/?%s', $this->baseUrl, http_build_query([
             'client_id' => $this->clientId,
             'redirect_uri' => $this->redirectUrl
         ]));
