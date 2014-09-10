@@ -14,7 +14,7 @@ class AuthenticationTest extends WebletTestCase {
         $app['platform.endpoint'] = 'https://api.example.com';
         $app['platform.client_id'] = 123;
         $app['platform.client_secret'] = '50f4k3!';
-        $app['platform.redirect_uri'] = 'http://localhost/redirect/cb';
+        $app['platform.redirect_uri'] = 'https://localhost/redirect/cb';
         $app['session.test'] = true;
 
         parent::configureApplication($app);
@@ -39,7 +39,7 @@ class AuthenticationTest extends WebletTestCase {
 
         $query = http_build_query([
             'client_id' => 123,
-            'redirect_uri' => 'http://localhost/redirect/cb',
+            'redirect_uri' => 'https://localhost/redirect/cb',
         ]);
         $this->assertEquals('https://api.example.com/auth/?' . $query, $response->getTargetUrl());
 

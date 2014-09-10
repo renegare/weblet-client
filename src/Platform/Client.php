@@ -43,7 +43,7 @@ class Client extends JSONClient implements ClientInterface {
      * {@inheritdoc}
      */
     public function getRedirectUri() {
-        return preg_replace('/^http:\/\/[^\/]+/', '', $this->redirectUrl);
+        return preg_replace('/^https?:\/\/[^\/]+/', '', $this->redirectUrl);
     }
 
     /**
