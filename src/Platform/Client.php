@@ -33,7 +33,8 @@ class Client extends JSONClient implements ClientInterface {
      * {@inheritdoc}
      */
     public function getAuthUrl() {
-        return sprintf('%s/auth/?%s', $this->baseUrl, http_build_query([
+        return sprintf('%s/oauth/auth?%s', $this->baseUrl, http_build_query([
+            'response_type' => 'code',
             'client_id' => $this->clientId,
             'redirect_uri' => $this->redirectUrl
         ]));
@@ -51,9 +52,12 @@ class Client extends JSONClient implements ClientInterface {
      */
     public function createToken($authCode) {
         $this->debug('Exchanging auth code for access code ...');
-        $response = $this->post('auth/access/', [
-            'code' => $authCode
-        ], ['X-CLIENT-SECRET' => $this->clientSecret]);
+        $response = $this->post('oauth/token', http_build_query([
+            'grant_type' => 'authorization_code',
+            'code' => $authCode,
+            'client_id' => $this->clientId,
+            'client_secret' => $this->clientSecret
+        ]), ['Content-Type' => 'application/x-www-form-urlencoded']);
         $responseData = $response->json();
 
         $token = new AccessToken([]);
@@ -86,7 +90,7 @@ class Client extends JSONClient implements ClientInterface {
         $request = parent::createRequest($method, $url, $options);
 
         if($accessToken = $this->getAccessToken()) {
-            $request->setHeader('X-ACCESS-CODE', $accessToken->getAttribute('access_code'));
+            $request->setHeader('Authorization', 'Bearer ' . $accessToken->getAttribute('access_token'));
         }
 
         return $request;

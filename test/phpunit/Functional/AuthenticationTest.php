@@ -38,29 +38,30 @@ class AuthenticationTest extends WebletTestCase {
         $this->assertEquals(Response::HTTP_FOUND, $response->getStatusCode());
 
         $query = http_build_query([
+            'response_type' => 'code',
             'client_id' => 123,
             'redirect_uri' => 'https://localhost/redirect/cb',
         ]);
-        $this->assertEquals('https://api.example.com/auth/?' . $query, $response->getTargetUrl());
+        $this->assertEquals('https://api.example.com/oauth/auth?' . $query, $response->getTargetUrl());
 
         // post user authentication
         $platform = $this->app['platform'];
         $this->assertRequest($platform, [
                 'method' => 'POST',
-                'path' => '/auth/access/'
+                'path' => '/oauth/token',
+                'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+                'body' => [
+                    'grant_type' => 'authorization_code',
+                    'code' => 'test-auth-code',
+                    'client_id' => 123,
+                    'client_secret' => '50f4k3!'
+                ]
             ], function($request) use ($platform){
-                $data = json_decode((string)$request->getBody(), true);
-                $this->assertEquals([
-                    'code' => 'test-auth-code'
-                ], $data);
-
-                $this->assertEquals('application/json', implode(',', $request->getHeaders()['Content-Type']));
-                $this->assertEquals('50f4k3!', implode(',', $request->getHeaders()['X-CLIENT-SECRET']));
 
                 return [
-                    'access_code' => 'test-access-token',
-                    'refresh_code' => 'test-refresh-token',
-                    'lifetime' => '3600'
+                    'access_token' => 'test-access-token',
+                    'refresh_token' => 'test-refresh-token',
+                    'expires_in' => '3600'
                 ];
         });
 
@@ -72,11 +73,8 @@ class AuthenticationTest extends WebletTestCase {
 
         $this->assertRequest($platform, [
             'method' => 'GET',
-            'path' => '/test/endpoint'], function($request) use ($platform){
-                $this->assertEquals('test-access-token', implode(',', $request->getHeaders()['X-ACCESS-CODE']));
-
-                return ['response' => 'All Good!'];
-        });
+            'path' => '/test/endpoint',
+            'headers' => ['Authorization' => 'Bearer test-access-token']], ['response' => 'All Good!']);
 
         $client->followRedirect();
         $response = $client->getResponse();
@@ -91,9 +89,9 @@ class AuthenticationTest extends WebletTestCase {
 
         $this->assertEquals([
             'auth_code' => 'test-auth-code',
-            'access_code' => 'test-access-token',
-            'refresh_code' => 'test-refresh-token',
-            'lifetime' => '3600',
+            'access_token' => 'test-access-token',
+            'refresh_token' => 'test-refresh-token',
+            'expires_in' => '3600',
         ], $tokenAttributes);
     }
 }
